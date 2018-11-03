@@ -1,0 +1,11 @@
+{% extends "index.html" %}
+
+{% block content %}
+{% for x, y, z in posts %}
+<center>
+    <div class="card">
+        <a style="color: black;" href="{{ url_for('article', path=z) }}">{{ x }} - {{ y }}</a>
+    </div>
+</center>
+{% endfor %}
+{% endblock %}
