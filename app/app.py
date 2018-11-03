@@ -31,7 +31,6 @@ def blog():
 @app.route("/blog/<path>")
 def article(path):
     p = "".join([x for x in open("app/posts/" + path + ".html").readlines()])
-    # p = open("app/posts/" + path + ".md").readlines()
     return render_template("article.html", article_html=p)
 
 def parse_date(x):
