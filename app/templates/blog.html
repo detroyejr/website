@@ -1,11 +1,20 @@
 {% extends "index.html" %}
 
 {% block content %}
-{% for x, y, z in posts %}
-<center>
-    <div class="card">
-        <a style="color: black;" href="{{ url_for('article', path=z) }}">{{ x }} - {{ y }}</a>
+<div class="row">
+    {% for x, y, z in posts %}
+    <div class="card article-card col-sm">
+        <a style="color: black;" href="{{ url_for('article', path=z) }}">
+            <div class="h3 mt-3 text-capitalize">
+                {{ y }}
+            </div>
+            <div class="lead text-muted float-right">
+                <small>{{ x }}</small>
+            </div>
+        </a>
     </div>
-</center>
-{% endfor %}
+    {% endfor %}
+
+</div>
+</div>
 {% endblock %}
