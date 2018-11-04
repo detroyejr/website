@@ -1,14 +1,13 @@
-## Flask Image
-FROM python:3.7.0-slim
+## Python Image.
+FROM python:3.7.1-slim
 
-RUN apt-get update && apt-get install -y pandoc
-## Add requirements
+## Add Packages.
 COPY app/requirements.txt requirements.txt
-RUN pip install -r requirements.txt
-
+RUN apt-get update \
+    && apt-get install -y pandoc \
+    && pip install -r requirements.txt
 
 ENV FLASK_APP=app/app.py
-ENV FLASK_DEBUG=1
 COPY app app
 
 ENTRYPOINT [ "python" ]
