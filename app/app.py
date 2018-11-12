@@ -18,6 +18,10 @@ def index():
     posts = generate_html_posts()
     return render_template("index.html", posts=posts)
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
 @app.route("/images/<file>")
 def images(file):
     return send_from_directory("images", file)
