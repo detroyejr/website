@@ -22,14 +22,19 @@
             background-position: top;
         }
 
-        .article-card {
-            height: 100px;
+        .jumbotron {
+            background-image: url('/images/header.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: top;
+            height: 450px;
+            opacity: 0.9;
         }
     </style>
 </head>
 <div class="container">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="/">Website</a>
+        <a class="navbar-brand" href="/">detroyejr</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -42,7 +47,7 @@
             </div>
         </div>
         <div class="float-right">
-            <ul class="list-inline">
+            <ul class="list-inline mt-3">
                 <li class="inline-item">
                     <a class="px-1" style="color:black;" href="https://github.com/detroyejr" rel="external nofollow"
                         target="_blank">
@@ -57,20 +62,12 @@
         </div>
     </nav>
     {% block content %}
-    <div class="jumbotron jumbotron-fluid">
-        <div class="container">
-            <h1 class="display-2 text-black">detroyejr</h1>
-            <p class="lead text-muted">A blog about Data, Docker, and other fun stuff.</p>
-        </div>
+    <div class="container">
+        <!-- <h1 class="display-2 text-black">detroyejr</h1> -->
     </div>
-    <div class="card">
-        <div class="card-body bg-cover" style="height:200px;">
-            <p class="float-right display-4" , style="margin-top: 50px; margin-bottom: 50px;">
-                <small><a class="text-white active" href=/blog>Read</a></small>
-            </p> 
-        </div> 
-    </div> 
-</div> 
-{% endblock %} 
-</div> 
+    <div class="jumbotron jumbotron-fluid"></div>
+    <center><p class="lead text-black">The Website of Jonathan De Troye</p></center>
+    <center><a href="/blog"><button type="button" class="btn btn-primary">Go</button></center></a>
+    {% endblock %} 
+</div>
 </html>
