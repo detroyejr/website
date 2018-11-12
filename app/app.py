@@ -29,6 +29,7 @@ def images(file):
 @app.route("/blog")
 def blog():
     posts = generate_html_posts()
+    posts.reverse()
     # generate_html_posts()
     return render_template("blog.html", posts=posts)
 
