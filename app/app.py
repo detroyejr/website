@@ -9,7 +9,7 @@ The personal website of Jonathan De Troye
 import os
 from flask import Flask, render_template, send_from_directory
 import pypandoc
-from utilities import parse_date, parse_title, generate_html_posts, md_to_html
+from utilities import parse_date, parse_title, generate_html_posts
 
 app = Flask(__name__)
 
