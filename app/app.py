@@ -7,9 +7,17 @@ The personal website of Jonathan De Troye
 """
 
 import os
+import logging
+import sys
 from flask import Flask, render_template, send_from_directory
-import pypandoc
-from utilities import parse_date, parse_title, generate_html_posts
+from app.utilities import parse_date, parse_title, generate_html_posts
+
+logging.basicConfig(
+        stream=sys.stdout,
+        level=logging.INFO,
+        format='%(levelname)s - %(asctime)s - %(message)s',
+        datefmt='%Y-%m-%d %X'
+    )
 
 app = Flask(__name__)
 
@@ -45,4 +53,4 @@ def article(path):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0")
+    app.run()

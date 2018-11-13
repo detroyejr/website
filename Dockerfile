@@ -6,7 +6,6 @@ COPY app/requirements.txt requirements.txt
 RUN pip install -r requirements.txt --no-cache-dir
 
 ENV FLASK_APP=app/app.py
-COPY app app
+COPY app /app
 
-ENTRYPOINT [ "python" ]
-CMD ["app/app.py"]
+CMD ["gunicorn", "--bind", ":80", "app.app:app"]

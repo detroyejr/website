@@ -1,0 +1,209 @@
+<div class="container">
+<div class="display-4">
+<p>
+Docker, R, and You
+</p>
+</div>
+<div class="lead">
+<p>
+A gentle introduction to docker for R user.
+</p>
+</div>
+<h2 id="so-why-docker">
+So, why Docker?
+</h2>
+<p>
+Getting started with docker is simple. Once installed, you can get your feet wet by starting a fresh R console with <code>docker run --ti rocker/r-base</code>. From there, it's not too difficult to start working with Dockerfiles to create your own custom images. Its challenges come when you dive deeper into the ecosystem. Once you've learned all the pieces, it is a great tool, but it can feel unnecessary if your goal is to publish content.
+</p>
+<p>
+I chose to deploy with Docker because it offers a streamlined way to unify different web services and deploy them to a hosting platform like Digital Ocean. Once the pipeline is setup, Docker gives you flexibility to publish content easily.
+</p>
+<h2 id="getting-started">
+Getting Started
+</h2>
+<p>
+For this tutorial, I'll assume that you have docker installed and you have access to a terminal. The goal today is to have enough to setup a basic website running Rstudio's shiny server. To do this, we'll need to work with two different images already available in the docker store.
+</p>
+<ul>
+<li>
+NGINX (our web server).
+</li>
+<li>
+rocker/shiny.
+</li>
+</ul>
+<p>
+You can run either command below to start one or both services.
+</p>
+<pre class="{bash}"><code># Start the Web Server.
+docker run -p 80:80 nginx
+
+# Start Shiny.
+docker run -p 3838:3838 rocker/shiny</code></pre>
+<p>
+If everyting worked, docker is running two separate containers. The <code>-p</code> option defines the open port mapping that that you can use to access the running container (local port first, container port second) from your local browser. <code>http://localhost</code> points to NGINX and <code>http://localhost:3838</code> points to shiny. If you access them now, the default welcome pages for both apps will greet you. Without additional configuration, these containers are not very useful, but we can customize them to our needs using a Dockerfile. We will create one for NGINX and one for Shiny Server.
+</p>
+<h2 id="nginx">
+NGINX
+</h2>
+<p>
+Dockerfiles are the instructions for building an image. Each file contains a base image and any addon packages that your app needs. Our first image has a dual purpose, it will need to serve our static blog content and provide access to our shiny server running at the same time.
+</p>
+<p>
+Let's first setup our Dockerfile for NGINX.
+</p>
+<pre class="{dockerfile}"><code>## NGINX Base.
+FROM nginx:1.13
+
+## Image information.
+LABEL MAINTAINER=&quot;Jonathan De Troye&quot;
+LABEL EMAIL=&quot;detroyejr@outlook.com&quot;
+
+EXPOSE 80
+
+## Add any packages that need to be installed.
+RUN apt-get update &amp;&amp; \
+    apt-get install git -y
+
+## A directory for NGINX is created. The static website is stored on github
+## where it can be cloned. The &#39;public&#39; directory created by blogdown
+## is copied into here.
+RUN mkdir /www &amp;&amp; \
+    chown nginx:nginx /www
+
+COPY nginx.conf /etc/nginx/nginx.conf</code></pre>
+<p>
+The dockerfile above does three main things:
+</p>
+<ol style="list-style-type: decimal">
+<li>
+Installs Git.
+</li>
+<li>
+Clones our website content from Github.
+</li>
+<li>
+Replaces the default nginx.conf instructions.
+</li>
+</ol>
+<p>
+For website content, I used the the R package <a href="https://github.com/rstudio/blogdown">blogdown</a> and pushed the pages to a github repository for easier updating. Each time docker builds the the image, the latest repository will be fetched.
+</p>
+<p>
+The nginx.conf file serves as the main logic for serving web pages. While you can keep most of the defaults, the 'www' directory and our shiny server needs to be mapped to http URLs. Below is the relevant server logic that needs to be added:
+</p>
+<pre><code># Main Server Block
+    server {
+        listen       80;
+        location / {
+            root /www/public;
+            index index.htm index.html;
+        }
+        
+        # Our shiny server. 
+        location /shiny/ {
+            # Point to the shiny server.
+            proxy_pass http://shiny:3838/;
+            
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection &quot;upgrade&quot;;
+            proxy_read_timeout 999999999;
+            
+            # Appends a &quot;/&quot; to the end of the uri so that shiny apps can work.
+            # Link: https://deanattali.com/2015/05/09/setup-rstudio-shiny-server-digital-ocean/
+            rewrite ^(/shiny/[^/]+)$ $1/ permanent;
+        }
+    }</code></pre>
+<p>
+There are two main pieces to this server block. The first sets the root html content location which is what you get when navigating to <a href="http://detroyejr/me">http://detroyejr.me</a>. The second location block points to our shiny server found at <a href="detroyejr.me/shiny/" class="uri">detroyejr.me/shiny/</a>. Since shiny server is not a static set of files or locally available to NGINX, it needs to know where to go when you request content from detroyejr.me/shiny. The option <code>proxy_pass</code> sets the server where shiny can be accessed. Normally, this would be setup with an available ip address, but since we're using a tool called docker compose (more on that below), we can use the container's name in place of the ip address. Everything below <code>proxy_pass</code> was borrowed from <a href="https://deanattali.com/2015/05/09/setup-rstudio-shiny-server-digital-ocean/">Dean Attali's recently updated guide on running Shiny with Digital Ocean.</a>
+</p>
+<h2 id="shiny">
+Shiny
+</h2>
+<p>
+Once NGINX is setup, our Shiny Server is a easier to manage.
+</p>
+<pre class="{dockerfile}"><code>## Base Shiny Image.
+FROM rocker/shiny:latest
+
+## Image Info.
+LABEL MAINTAINER=&quot;Jonathan De Troye&quot;
+LABEL EMAIL=&quot;detroyejr@outlook.com&quot;
+
+## Get git.
+RUN apt-get update &amp;&amp; \
+    apt-get install git -y
+
+RUN rm -r /srv/shiny-server/
+
+## Shiny apps are stored on github. Remove all the test apps and add others into
+## that same directory.
+USER shiny</code></pre>
+<p>
+The setup is similar to what we had before.
+</p>
+<ul>
+<li>
+Install Git.
+</li>
+<li>
+Setting the USER to shiny.
+</li>
+<li>
+Remove the sample applications.
+</li>
+<li>
+Import our own apps.
+</li>
+</ul>
+<p>
+Since NGINX and Shiny share nearly identical configuration syntax, we could write additional instructions. For now, all our apps will live in the default location <code>srv/shiny-server</code>. Any of the available apps can be accessed by using the name of the folder (e.g. detroyejr.me/shiny/my-app).
+</p>
+<h2 id="tie-together-with-docker-compose">
+Tie Together with Docker Compose
+</h2>
+<p>
+Once our dockerfiles are working, we need to bridge them. The Docker ecosystem provides a tool called docker-compose to bring together our two Dockerfiles in a production-ready way. Our yaml file looks like this:
+</p>
+<pre><code>version: &quot;3&quot;
+services:
+  web:
+    container_name: website
+    build: nginx/.
+    ports:
+    - &quot;80:80&quot;
+    depends_on: 
+    - shiny
+  shiny:
+    container_name: shiny
+    build: shiny/.
+    ports:
+    - &quot;3838:3838&quot;</code></pre>
+<p>
+Our configuration sets up two services called web (NGINX server) and shiny (shiny server).
+</p>
+<ul>
+<li>
+<code>build</code>: Points to the dockerfiles in our directories.
+</li>
+<li>
+<code>ports</code>: Maps to the ports that our services use.
+</li>
+<li>
+<code>depends_on</code>: Tells docker-compose to start the shiny service first since NGINX will fail it cannot locate the shiny server address.
+</li>
+<li>
+<code>container_name</code>: Allows our containers to communicate with <code>http://container_name</code>.
+</li>
+</ul>
+<p>
+After setting up our docker-compose.yml file, both containers will deploy when <code>docker-compose up</code> is executed. If docker-compose executed successfully, we can access our services from our public ip address.
+</p>
+<h2 id="conclusion">
+Conclusion
+</h2>
+<p>
+Now that we have our Dockerfiles, we can begin setting up everything for deployment. Digital Ocean provides droplets with docker already deployed.
+</p>
+</div>
