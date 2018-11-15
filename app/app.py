@@ -15,7 +15,7 @@ from app.utilities import parse_date, parse_title, generate_html_posts
 logging.basicConfig(
         stream=sys.stdout,
         level=logging.INFO,
-        format='%(levelname)s - %(asctime)s - %(message)s',
+        format='[%(asctime)s +0000] [1] [%(levelname)s] %(message)s',
         datefmt='%Y-%m-%d %X'
     )
 
@@ -48,6 +48,7 @@ def blog():
 
 @app.route("/blog/<path>")
 def article(path):
+    logging.info(path)
     p = "".join([x for x in open("app/posts/" + path + ".html").readlines()])
     return render_template("article.html", article_html=p)
 
