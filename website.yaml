@@ -26,10 +26,12 @@ kind: Service
 metadata:
   name: load-balancer
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: website
   ports:
-    - name: tcp
+    - name: http
       port: 80
       targetPort: 80
+      NodePort: 80
+      protocol: TCP
