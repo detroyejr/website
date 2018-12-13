@@ -23,15 +23,15 @@ spec:
 ---
 apiVersion: v1
 kind: Service
-metadata:
+metadata:  
   name: load-balancer
 spec:
-  type: NodePort
-  selector:
+  selector:    
     app: website
-  ports:
-    - name: http
-      port: 80
-      targetPort: 80
-      NodePort: 80
-      protocol: TCP
+  type: NodePort
+  ports:  
+  - name: http
+    port: 80
+    targetPort: 80
+    nodePort: 30036
+    protocol: TCP
