@@ -2,7 +2,7 @@ version: "3.7"
 services:
   web:
     container_name: web
-    build: .
+    build: website/.
     ports:
       - "8000"
     volumes:
