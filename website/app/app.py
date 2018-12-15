@@ -33,9 +33,9 @@ def about():
     return render_template("about.html")
 
 
-@app.route("/images/<file>")
-def images(file):
-    return send_from_directory("images", file)
+@app.route("/static/<file>")
+def resources(file):
+    return send_from_directory("static", file)
 
 
 @app.route("/blog")
